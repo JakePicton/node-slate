@@ -63,7 +63,7 @@ var getPageData = function() {
 };
 
 gulp.task('clean', function () {
-  return del(['build/*']);
+  return del.sync(['build/*']);
 });
 
 gulp.task('fonts', function() {
