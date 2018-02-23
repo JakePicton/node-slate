@@ -66,9 +66,3 @@ Run a dev server that live-reloads at http://localhost:4567:
 ```shell
 npm start
 ```
-
-Publish your docs to `origin/gh-pages` branch:
-
-```shell
-npm run deploy
-```
