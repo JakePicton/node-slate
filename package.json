@@ -8,6 +8,7 @@
   },
   "devDependencies": {
     "del": "^3.0.0",
+    "ejs": "^2.5.7",
     "gulp": "^3.9.1",
     "gulp-clean-css": "^3.9.2",
     "gulp-cli": "^2.0.1",
