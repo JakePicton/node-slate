@@ -469,15 +469,14 @@ html, body {
 
   aside {
     color: #fff;
-    padding-left: 0;
-    padding-top: 1em;
-    padding-bottom: 1em;
+    padding-left: $main-padding * 2;
+    padding-top: 14px;
+    padding-bottom: 14px;
     margin-top: 1.5em;
     margin-bottom: 1.5em;
     background: $aside-notice-bg;
     line-height: 1.6;
-    display: flex;
-    align-items: center;
+    position: relative;
 
     &.warning {
       background-color: $aside-warning-bg;
@@ -489,7 +488,11 @@ html, body {
   }
 
   aside:before {
-    padding: 0 1rem 0 $main-padding;
+    position: absolute;
+    top: 18px;
+    left: 0;
+    padding-left: $main-padding;
+    width: $main-padding;
     font-size: 14px;
   }
 
