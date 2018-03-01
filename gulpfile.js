@@ -14,6 +14,7 @@ var open = require('gulp-open');
 var prettify = require('gulp-prettify');
 var rename = require("gulp-rename");
 var sass = require('gulp-sass');
+var tildeImporter = require('node-sass-tilde-importer');
 var uglify = require('gulp-uglify');
 var yaml = require('js-yaml');
 
@@ -28,7 +29,7 @@ renderer.code = function (code, language) {
 };
 
 var readGlobalYml = function() {
-  return yaml.safeLoad(fs.readFileSync('./source/global.yml', 'utf8'));
+  return yaml.safeLoad(fs.readFileSync('./src/global.yml', 'utf8'));
 };
 
 var getGlobalPageData = function() {
@@ -38,16 +39,16 @@ var getGlobalPageData = function() {
     current_page: {
       data: config
     },
-    layout: './source/layout.ejs',
+    layout: './src/layout.ejs',
     page_classes: '',
     image_tag: function(filename, alt, className) {
-      return '<img alt="' + alt + '" class="' + className + '" src="/images/' + filename + '">';
+      return '<img alt="' + alt + '" class="' + className + '" src="/docs/images/' + filename + '">';
     },
     javascript_include_tag: function(name) {
-      return '<script src="/javascripts/' + name + '.js" type="text/javascript"></script>';
+      return '<script src="/docs/javascripts/' + name + '.js"></script>';
     },
     stylesheet_link_tag: function(name, media) {
-      return '<link href="/stylesheets/' + name + '.css" rel="stylesheet" type="text/css" media="' + media + '" />';
+      return '<link href="/docs/stylesheets/' + name + '.css" rel="stylesheet" type="text/css" media="' + media + '" />';
     },
     langs: (config.language_tabs || []).map(function(lang) {
       return typeof lang == 'string' ? lang : lang.keys.first;
@@ -56,49 +57,49 @@ var getGlobalPageData = function() {
 };
 
 gulp.task('clean', function () {
-  return del.sync(['build/*']);
+  return del.sync(['dist/*']);
 });
 
 gulp.task('fonts', function() {
-  return gulp.src('./source/fonts/**/*').pipe(gulp.dest('build/fonts'));
+  return gulp.src('./src/fonts/**/*').pipe(gulp.dest('dist/docs/fonts'));
 });
 
 gulp.task('images', function() {
-  return gulp.src('./source/images/**/*').pipe(gulp.dest('build/images'));
+  return gulp.src('./src/images/**/*').pipe(gulp.dest('dist/docs/images'));
 });
 
 gulp.task('js', function() {
   var config = readGlobalYml();
   var libs = [
-    './source/javascripts/lib/_energize.js',
-    './source/javascripts/lib/_jquery.js',
-    './source/javascripts/lib/_jquery_ui.js',
-    './source/javascripts/lib/_jquery.tocify.js',
-    './source/javascripts/lib/_imagesloaded.min.js',
+    './src/javascripts/lib/_energize.js',
+    './src/javascripts/lib/_jquery.js',
+    './src/javascripts/lib/_jquery_ui.js',
+    './src/javascripts/lib/_jquery.tocify.js',
+    './src/javascripts/lib/_imagesloaded.min.js',
   ];
   var scripts = [
-    './source/javascripts/app/_lang.js',
-    './source/javascripts/app/_toc.js',
+    './src/javascripts/app/_lang.js',
+    './src/javascripts/app/_toc.js',
   ];
 
   if (config.search) {
-    libs.push('./source/javascripts/lib/_lunr.js');
-    libs.push('./source/javascripts/lib/_jquery.highlight.js');
-    libs.push('./source/javascripts/app/_search.js');
+    libs.push('./src/javascripts/lib/_lunr.js');
+    libs.push('./src/javascripts/lib/_jquery.highlight.js');
+    libs.push('./src/javascripts/app/_search.js');
   }
 
   return gulp.src(libs.concat(scripts))
     .pipe(concat('all.js'))
     .pipe(gulpif(COMPRESS, uglify()))
-    .pipe(gulp.dest('./build/javascripts'));
+    .pipe(gulp.dest('./dist/docs/javascripts'));
 });
 
 gulp.task('sass', function () {
-  return gulp.src('./source/stylesheets/*.css.scss')
-    .pipe(sass().on('error', sass.logError))
+  return gulp.src('./src/stylesheets/*.css.scss')
+    .pipe(sass({ importer: tildeImporter }).on('error', sass.logError))
     .pipe(rename({ extname: ''}))
     .pipe(gulpif(COMPRESS, cleanCSS()))
-    .pipe(gulp.dest('./build/stylesheets'));
+    .pipe(gulp.dest('./dist/docs/stylesheets'));
 });
 
 gulp.task('highlightjs', function () {
@@ -107,23 +108,26 @@ gulp.task('highlightjs', function () {
   return gulp.src(path)
     .pipe(rename({ prefix: 'highlight-'}))
     .pipe(gulpif(COMPRESS, cleanCSS()))
-    .pipe(gulp.dest('./build/stylesheets'));
+    .pipe(gulp.dest('./dist/docs/stylesheets'));
 });
 
 gulp.task('html', function () {
   var globalData = getGlobalPageData();
-  return gulp.src('./source/pages/**/index.md')
+  return gulp.src('./src/pages/**/index.md')
     .pipe(frontMatter())
     .pipe(layout(function(file) {
       var includes = file.frontMatter.includes
-        .map(function(include) { return './source/includes/' + include + '.md'; })
+        .map(function(include) { return './src/includes/' + include + '.md'; })
         .map(function(include) { return fs.readFileSync(include, 'utf8'); })
         .map(function(include) { return marked(include, { renderer: renderer }); });
 
-      return assign({}, globalData, { includes: includes } );
+      return assign({}, globalData, {
+        prepend: marked(file.contents.toString(), { renderer: renderer }),
+        includes: includes
+      });
     }))
     .pipe(gulpif(COMPRESS, prettify({indent_size: 2})))
-    .pipe(gulp.dest('./build'));
+    .pipe(gulp.dest('./dist/docs'));
 });
 
 gulp.task('NO_COMPRESS', function() {
@@ -134,17 +138,17 @@ gulp.task('default', ['clean', 'fonts', 'images', 'highlightjs', 'js', 'sass', '
 
 gulp.task('serve', ['NO_COMPRESS', 'default'], function() {
 
-  gulp.watch(['./source/layout.ejs', './source/**/*', './source/includes/**/*'], ['html']);
-  gulp.watch('./source/javascripts/**/*', ['js']);
-  gulp.watch('./source/stylesheets/**/*', ['sass']);
-  gulp.watch('./source/global.yml', ['highlightjs', 'js', 'html']);
+  gulp.watch(['./src/layout.ejs', './src/**/*', './src/includes/**/*'], ['html']);
+  gulp.watch('./src/javascripts/**/*', ['js']);
+  gulp.watch('./src/stylesheets/**/*', ['sass']);
+  gulp.watch('./src/global.yml', ['highlightjs', 'js', 'html']);
 
-  var server = gls.static('build', 4567);
+  var server = gls.static('dist', 4567);
   server.start();
 
-  gulp.watch(['build/**/*'], function (file) {
+  gulp.watch(['dist/**/*'], function (file) {
     server.notify.apply(server, [file]);
   });
 
-  gulp.src(__filename).pipe(open({uri: 'http://localhost:4567'}));
+  gulp.src(__filename).pipe(open({uri: 'http://localhost:4567/docs'}));
 });

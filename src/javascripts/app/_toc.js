@@ -12,7 +12,7 @@
 
   var makeToc = function() {
     global.toc = $("#toc").tocify({
-      selectors: 'h1, h2',
+      selectors: 'h1, h2, h3, h4, h5',
       extendPage: false,
       theme: 'none',
       smoothScroll: false,
@@ -52,6 +52,6 @@
     $('.content').imagesLoaded( function() {
       global.toc.calculateHeights();
     });
+    $(".tocify-header > li > a").click();
   });
 })(window);
-

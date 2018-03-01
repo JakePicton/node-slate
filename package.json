@@ -1,9 +1,11 @@
 {
   "name": "node-slate",
   "version": "1.0.0",
-  "description": "Node port of tripit/slate",
+  "description": "Node port of lord/slate",
+  "private": true,
   "scripts": {
-    "start": "gulp serve",
+    "dev": "gulp serve",
+    "start": "npm run dev",
     "build": "gulp"
   },
   "devDependencies": {
@@ -26,6 +28,7 @@
     "js-yaml": "^3.10.0",
     "lodash.assign": "^4.2.0",
     "marked": "^0.3.16",
-    "node-sass": "^4.7.2"
+    "node-sass": "^4.7.2",
+    "node-sass-tilde-importer": "^1.0.1"
   }
 }

@@ -168,12 +168,26 @@ html, body {
 
   // Subheaders are the submenus that slide open
   // in the table of contents.
+  @mixin recursive-sub-header-indent($max-indent, $indent: 1) {
+    .tocify-subheader {
+      .tocify-item > a {
+        padding-left: $nav-padding + ($indent * $nav-indent);
+      }
+
+      @if $indent < $max-indent {
+        @include recursive-sub-header-indent($max-indent, $indent + 1);
+      }
+    }
+  }
+
+  @include recursive-sub-header-indent(4);
+
   .tocify-subheader {
     display: none; // tocify will override this when needed
     background-color: $nav-subitem-bg;
     font-weight: 500;
-    .tocify-item>a {
-      padding-left: $nav-padding + $nav-indent;
+
+    .tocify-item > a {
       font-size: 12px;
     }
   }
@@ -338,7 +352,7 @@ html, body {
 
   h1 {
     @extend %header-font;
-    font-size: 25px;
+    font-size: 30px;
     padding-top: 0.5em;
     padding-bottom: 0.5em;
     margin-bottom: $h1-margin-bottom;
@@ -355,7 +369,7 @@ html, body {
 
   h2 {
     @extend %header-font;
-    font-size: 19px;
+    font-size: 25px;
     margin-top: 4em;
     margin-bottom: 0;
     border-top: 1px solid #ccc;
@@ -373,13 +387,13 @@ html, body {
 
   h3, h4, h5, h6 {
     @extend %header-font;
-    font-size: 15px;
+    font-size: 20px;
     margin-top: 2.5em;
     margin-bottom: 0.8em;
   }
 
   h4, h5, h6 {
-    font-size: 10px;
+    font-size: 16px;
   }
 
   hr {
@@ -454,12 +468,16 @@ html, body {
   }
 
   aside {
+    color: #fff;
+    padding-left: 0;
     padding-top: 1em;
     padding-bottom: 1em;
     margin-top: 1.5em;
     margin-bottom: 1.5em;
     background: $aside-notice-bg;
     line-height: 1.6;
+    display: flex;
+    align-items: center;
 
     &.warning {
       background-color: $aside-warning-bg;
@@ -471,8 +489,7 @@ html, body {
   }
 
   aside:before {
-    vertical-align: middle;
-    padding-right: 0.5em;
+    padding: 0 1rem 0 $main-padding;
     font-size: 14px;
   }
 

@@ -854,7 +854,7 @@
             else {
 
                 // Hides all non-active sub-headers
-                self.hide($(subheaderClass).not(elem.closest(headerClass).find(subheaderClass).not(elem.siblings())));
+                self.hide($(subheaderClass).not(elem).not(elem.parents(subheaderClass)));
 
             }
 
